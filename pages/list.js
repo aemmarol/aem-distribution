@@ -25,6 +25,7 @@ const ListPage = () => {
   const [selectedFile, setSelectedFile] = useState({});
   const [showDeliveryModal, setShowDeliveryModal] = useState(false);
   const [displayLoader, setDisplayLoader] = useState(true);
+  const [filter, setFilter] = useState("pending");
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -105,6 +106,18 @@ const ListPage = () => {
     }
   };
 
+  const getFilterCondition = (status)=>{
+    if(filter==="pending"){
+      return !status ||
+      status === "To be dispatched" ||
+      status === "Dispatched"
+    }else if(filter==="delivered"){
+      return status === "Delivered"
+    }else if(filter==="returned"){
+      return status === "Returned"
+    }
+  }
+
   return (
     <Layout className="min-h-screen overflow-y-auto ">
       <Head>
@@ -140,13 +153,13 @@ const ListPage = () => {
           </div>
           <Row gutter={[16, 16]}>
             <Col xs={12} md={8} lg={6} xl={4}>
-              <Card className="p-0 rounded-lg">
+              <Card onClick={() => setFilter("pending")} className={filter === "pending" ? "p-0 rounded-lg bg-gray-200" : "p-0 rounded-lg"}>
                 <div className="flex">
                   <span className="flex items-center justify-center w-12 text-5xl mr-4 text-amber-500">
                     <FiAlertCircle />
                   </span>
                   <div className="flex flex-col flex-grow">
-                    <p className="text-xs">pending</p>
+                    <p className="text-xs">Pending</p>
                     <p className="text-4xl text-amber-500">
                       {
                         fileDetails.filter(
@@ -162,13 +175,13 @@ const ListPage = () => {
               </Card>
             </Col>
             <Col xs={12} md={8} lg={6} xl={4}>
-              <Card className="p-0 rounded-lg">
+              <Card onClick={() => setFilter("delivered")} className={filter === "delivered" ? "p-0 rounded-lg bg-gray-200" : "p-0 rounded-lg"}>
                 <div className="flex">
                   <div className="flex items-center justify-center w-12 text-5xl mr-4 text-lime-600">
                     <FiCheckCircle />
                   </div>
                   <div className="flex flex-col flex-grow">
-                    <p className="text-xs">delivered</p>
+                    <p className="text-xs">Delivered</p>
                     <p className="text-4xl text-lime-600">
                       {
                         fileDetails.filter((val) => val.status === "Delivered")
@@ -180,13 +193,13 @@ const ListPage = () => {
               </Card>
             </Col>
             <Col xs={12} md={8} lg={6} xl={4}>
-              <Card className="p-0 rounded-lg">
+              <Card onClick={() => setFilter("returned")} className={filter === "returned" ? "p-0 rounded-lg bg-gray-200" : "p-0 rounded-lg"}>
                 <div className="flex">
                   <div className="flex items-center justify-center w-12 text-5xl mr-4 text-red-600">
                     <FiXCircle />
                   </div>
                   <div className="flex flex-col flex-grow">
-                    <p className="text-xs">returned</p>
+                    <p className="text-xs">Returned</p>
                     <p className="text-4xl text-red-600">
                       {
                         fileDetails.filter((val) => val.status === "Returned")
@@ -200,7 +213,7 @@ const ListPage = () => {
           </Row>
 
           <div className="w-full flex items-start my-8">
-            <h3 className="text-2xl">Pending List</h3>
+            <h3 className="text-2xl capitalize">{filter+" list"}</h3>
             <h3 className="text-2xl mx-1">:</h3>
           </div>
           {Object.keys(subsectorGroupedFileDetails).map((key) => (
@@ -208,10 +221,7 @@ const ListPage = () => {
               <h1 className="text-lg my-2">{key}</h1>
               {subsectorGroupedFileDetails[key]
                 .filter(
-                  (value) =>
-                    !value.status ||
-                    value.status === "To be dispatched" ||
-                    value.status === "Dispatched"
+                  (value) => getFilterCondition(value.status)
                 )
                 .map((val) => (
                   <Card
